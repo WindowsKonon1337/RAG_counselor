@@ -1,6 +1,7 @@
 import chromadb
-from chromadb.utils import embedding_functions
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 from fastapi import FastAPI
+from utils import load_laws_into_db
 
 
 app = FastAPI()
@@ -16,8 +17,10 @@ if __name__ == '__main__':
     collection_list = client.list_collections()
 
     if 'koap-rf' not in collection_list:
-        client.create_collection('koap-rf')
-        # parse data
-        # insert into db
+        client.create_collection(
+            name='koap-rf',
+            embedding_function=SentenceTransformerEmbeddingFunction('sentence-transformers/sentence-t5-large')
+        )
+        # trigger airflow DAG
     
     koaprf_collection = client.get_collection('koap-rf')
