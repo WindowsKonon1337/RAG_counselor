@@ -51,7 +51,7 @@ class Fetcher:
         law_div = soup.find('div', class_='document-page__content document-page_left-padding')
 
         extracted_divs = law_div.find_all('div', class_='document__edit doc-edit')
-        for div in law_div.find_all('div', class_='document__edit doc-edit'):
+        for div in extracted_divs:
             div.extract()
 
         law_desc = list(

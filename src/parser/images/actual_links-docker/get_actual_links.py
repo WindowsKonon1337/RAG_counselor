@@ -37,7 +37,7 @@ def get_act_links(output_file):
             lambda x: x.get('href'),
             filter(
                 lambda x: actual_law_condition(x.text),
-                law_links[idxs[0] + 2: idxs[1] - 1]
+                law_links[idxs[0] + 2: idxs[1]]
             )
         )
     )
