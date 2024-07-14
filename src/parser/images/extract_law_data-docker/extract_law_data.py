@@ -49,9 +49,22 @@ class Fetcher:
     async def parse_response(self, data):
         soup = bs(data, 'html.parser')
         law_div = soup.find('div', class_='document-page__content document-page_left-padding')
-        law_desc = law_div.find_all('p')
+
+        extracted_divs = law_div.find_all('div', class_='document__edit doc-edit')
+        for div in law_div.find_all('div', class_='document__edit doc-edit'):
+            div.extract()
+
+        law_desc = list(
+            filter(
+                    lambda x: x.get('class', []) != ['no-indent'],
+                    law_div.find_all('p')
+            )
+        )
         law_desc_list = list(filter(self.__filter_condition, [x.text for x in law_desc]))
-        law_num, law_desc_str = '.'.join(law_desc_list[0].split('.')[:2]), ' '.join(law_desc_list[1:]).strip()
+        splitted_label = law_desc_list[0].split('.')
+        tail_nums = [i for i in splitted_label[1:] if i.isdigit()]
+
+        law_num, law_desc_str = splitted_label[0] + '.' + '.'.join(tail_nums), ' '.join(law_desc_list[1:]).strip()
         law_parts = list(
                             filter(
                                 lambda x: x,

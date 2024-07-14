@@ -10,7 +10,7 @@ CONSULTANT_PLUS_LINK = 'https://www.consultant.ru'
 KOAPRF_DOC_LINK = 'document/cons_doc_LAW_34661'
 
 def actual_law_condition(text: str):
-    return 'Утратил' not in text
+    return not ('Утратил' in text or 'Глава' in text)
 
 
 @click.command('get_act_links')
