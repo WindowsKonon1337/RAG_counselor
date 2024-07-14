@@ -18,15 +18,13 @@ x-airflow-common:
     - postgres
 
 services:
-    # chroma:
-    #     image: chromadb/chroma:latest
-    #     restart: always
-    #     volumes:
-    #       - chroma_data:/chroma/data
-    #     ports:
-    #       - 8000:8000
-    #     networks:
-    #         - ragnet
+    chroma:
+        image: chromadb/chroma:latest
+        restart: always
+        volumes:
+          - chroma_data:/chroma/data
+        ports:
+          - 8000:8000
 
     postgres:
       image: postgres:12
@@ -59,17 +57,19 @@ services:
       container_name: airflow_scheduler
       restart: always
 
-    # rag_service:
-    #     build:
-    #         context: ./src
-    #         dockerfile: Dockerfile
-    #     restart: always
-    #     depends_on:
-    #         - chroma
-    #     ports:
-    #       - 8080:8080
-    #     networks:
-    #         - ragnet
+    rag_service:
+        build:
+            context: ./src
+            dockerfile: Dockerfile
+        restart: always
+        depends_on:
+            - chroma
+        volumes:
+          - parse_data:/parsed_data/
+        ports:
+          - 1337:1337
+        networks:
+            - ragnet
 
     actual_links:
       build:

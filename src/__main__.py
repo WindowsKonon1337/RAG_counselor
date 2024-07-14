@@ -21,6 +21,5 @@ if __name__ == '__main__':
             name='koap-rf',
             embedding_function=SentenceTransformerEmbeddingFunction('sentence-transformers/sentence-t5-large')
         )
-        # trigger airflow DAG
     
-    koaprf_collection = client.get_collection('koap-rf')
+    koaprf_collection = client.get_collection('koap-rf', embedding_function=SentenceTransformerEmbeddingFunction('sentence-transformers/sentence-t5-large'))
