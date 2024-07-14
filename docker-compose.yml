@@ -1,33 +1,92 @@
 version: '3.7'
 
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:2.3.0-python3.8
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+    - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    - AIRFLOW__CORE__LOGGING_LEVEL=INFO
+    - AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True
+  volumes:
+    - ./src/parser/dags:/opt/airflow/dags
+    - /var/run/docker.sock:/var/run/docker.sock
+    - logs:/opt/airflow/logs
+  depends_on:
+    - postgres
+
 services:
-    chroma:
-        image: chromadb/chroma:latest
-        restart: always
-        volumes:
-          - chroma_data:/chroma/data
-        ports:
-          - 8000:8000
-        # environment:
-        #     - CHROMA_SERVER_AUTHN_CREDENTIALS="test-token"
-        #     - CHROMA_SERVER_AUTHN_PROVIDER="chromadb.auth.token_authn.TokenAuthenticationServerProvider"
-        #     - CHROMA_AUTH_TOKEN_TRANSPORT_HEADER="X_CHROMA_TOKEN"
-        networks:
-            - ragnet
-    rag:
-        build:
-            context: ./src
-            dockerfile: Dockerfile
-        restart: always
-        depends_on:
-            - chroma
-        ports:
-          - 8080:8080
-        networks:
-            - ragnet
+    # chroma:
+    #     image: chromadb/chroma:latest
+    #     restart: always
+    #     volumes:
+    #       - chroma_data:/chroma/data
+    #     ports:
+    #       - 8000:8000
+    #     networks:
+    #         - ragnet
+
+    postgres:
+      image: postgres:12
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+        - POSTGRES_DB=airflow
+        - POSTGRES_PORT=5432
+      ports:
+        - "5432:5432"
+
+    airflow-init:
+      << : *airflow-common
+      container_name: airflow_init
+      entrypoint: /bin/bash
+      command: -c 'airflow db init && airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org'
+      restart: on-failure
+
+    airflow-webserver:
+      << : *airflow-common
+      command: airflow webserver
+      ports:
+        - 8080:8080
+      container_name: airflow_webserver
+      restart: always
+
+    airflow-scheduler:
+      << : *airflow-common
+      command: airflow scheduler
+      container_name: airflow_scheduler
+      restart: always
+
+    # rag_service:
+    #     build:
+    #         context: ./src
+    #         dockerfile: Dockerfile
+    #     restart: always
+    #     depends_on:
+    #         - chroma
+    #     ports:
+    #       - 8080:8080
+    #     networks:
+    #         - ragnet
+
+    actual_links:
+      build:
+        context: ./src/parser/images/actual_links-docker
+      image: airflow-actual_links
+      restart: 'no'
+      network_mode: 'host'
+
+    extract_law_data:
+      build:
+        context: ./src/parser/images/extract_law_data-docker
+      image: airflow-extract_data
+      restart: 'no'
 
 volumes:
   chroma_data:
+  logs:
 
 networks:
   ragnet:
