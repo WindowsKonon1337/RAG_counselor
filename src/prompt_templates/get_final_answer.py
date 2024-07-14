@@ -1,5 +1,5 @@
 def configure_final_answer_prompt(label, text, query):
-    final_answer_frompt_template = \
+    final_answer_prompt_template = \
 f'''
 !Задача!
 Определи наиболее релевантный пункт текста и дай ответ на вопрос
@@ -14,4 +14,4 @@ f'''
 Текст закона: {text}
 Запрос: {query}
 '''
-    return final_answer_frompt_template
+    return final_answer_prompt_template
