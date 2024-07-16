@@ -19,7 +19,7 @@ with DAG(
 ) as dag:
     get_links = DockerOperator(
         image="airflow-actual_links",
-        command='--output_file /opt/airflow/data/links/{{ ds }}',
+        command='--output_file /opt/airflow/data/links/{{ ds }}.json',
         network_mode="host",
         task_id="docker-airflow-get_koaprf-act-links",
         do_xcom_push=False,
