@@ -25,7 +25,7 @@ with DAG(
         auto_remove=True,
         docker_url='unix://var/run/docker.sock',
         mounts=[
-            Mount(source='parse_data', target='/opt/airflow/data/', type='volume')
+            Mount(source='rag_counselor_parse_data', target='/opt/airflow/data/', type='volume')
         ]
     )
 
@@ -38,7 +38,7 @@ with DAG(
         auto_remove=True,
         docker_url='unix://var/run/docker.sock',
         mounts=[
-            Mount(source='parse_data', target='/opt/airflow/data/', type='volume')
+            Mount(source='rag_counselor_parse_data', target='/opt/airflow/data/', type='volume')
         ]
     )
 
