@@ -41,19 +41,17 @@ if __name__ == '__main__':
             ('admin', 'admin')
         )
     
-    # koaprf_collection = client.get_collection(
-    #     'koap-rf',
-    #     embedding_function=SentenceTransformerEmbeddingFunction(embd_model)
-    # )
+    koaprf_collection = client.get_collection(
+        'koap-rf',
+        embedding_function=SentenceTransformerEmbeddingFunction(embd_model)
+    )
 
-    # setup_rag_sys(
-    #     {
-    #         'collection': koaprf_collection
-    #     }
-    # )
+    setup_rag_sys(
+            collection=koaprf_collection
+    )
 
-    # uvicorn.run(
-    #     app,
-    #     host='0.0.0.0',
-    #     port=1337
-    # )
+    uvicorn.run(
+        app,
+        host='0.0.0.0',
+        port=1337
+    )

@@ -1,13 +1,14 @@
-import chromadb
+import json
 import os
+from time import sleep
+from uuid import uuid4
+
+import chromadb
 import chromadb.api
 import requests
-from time import sleep
-from requests import HTTPError
-import json
-from uuid import uuid4
 from chromadb.utils.embedding_functions import \
     SentenceTransformerEmbeddingFunction
+from requests import HTTPError
 
 
 def trigger_dag(airflow_dag, creds):
@@ -81,7 +82,7 @@ def load_laws_into_db(
         data_volume_path: str,
         airflow_creds: tuple
     ):
-    
+
     if not os.listdir(data_volume_path):
         status = trigger_dag(
             airflow_dag,
@@ -91,13 +92,13 @@ def load_laws_into_db(
         if status != 200:
             raise HTTPError(f'Error with trigger dag {airflow_dag}. \
                             status code: {status}')
-        
-    while check_dag_status(
-        airflow_dag,
-        airflow_creds
-    ) != 'success':
-        sleep(15)
-        
+
+        while check_dag_status(
+            airflow_dag,
+            airflow_creds
+        ) != 'success':
+            sleep(15)
+
     collection = chroma_client.get_collection(
         chroma_collection_name,
         embedding_function=SentenceTransformerEmbeddingFunction(embd_model)

@@ -14,7 +14,8 @@ with DAG(
         'owner': 'WindowsKonon1337',
         'retries': 3,
         "retry_delay": timedelta(hours=1),
-    }
+    },
+    dagrun_timeout= timedelta(minutes=10)
 ) as dag:
     get_links = DockerOperator(
         image="airflow-actual_links",

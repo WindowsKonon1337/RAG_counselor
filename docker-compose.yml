@@ -28,7 +28,7 @@ services:
           start_period: 5s
           timeout: 10s
         volumes:
-          - chroma_data:/chroma/chroma
+          - ./volume_dumps/chroma_data:/chroma/chroma
         ports:
           - 8000:8000
         networks:
@@ -43,7 +43,7 @@ services:
           chroma:
             condition: service_healthy
         volumes:
-          - parse_data:/parsed_data/
+          - ./volume_dumps/parse_data:/parsed_data/
         ports:
           - 1337:1337
         networks:

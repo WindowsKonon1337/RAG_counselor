@@ -91,6 +91,7 @@ class Fetcher:
                 self.output_file.write('\n')
             except Exception as exception:
                 print(f'Error fetching {url} : {exception}')
+                self.queue.put(url)
 
     async def batch_fetch(self):
         workers = [
