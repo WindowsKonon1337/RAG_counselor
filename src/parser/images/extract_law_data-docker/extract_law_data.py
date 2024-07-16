@@ -119,7 +119,7 @@ def main(raw_law_links, output_file):
     fetcher = Fetcher(
         url_file=raw_law_links,
         output_file=output_file,
-        workers=8,
+        workers=2,
     )
 
     loop = asyncio.get_event_loop()
