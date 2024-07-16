@@ -21,10 +21,33 @@ services:
     chroma:
         image: chromadb/chroma:latest
         restart: always
+        healthcheck: 
+          test: curl localhost:8000/api/v1/heartbeat || exit 1
+          interval: 10s
+          retries: 2
+          start_period: 5s
+          timeout: 10s
         volumes:
           - chroma_data:/chroma/data
         ports:
           - 8000:8000
+        networks:
+          ragnet:
+
+    rag_service:
+        build:
+            context: ./src
+            dockerfile: Dockerfile
+        restart: always
+        depends_on:
+          chroma:
+            condition: service_healthy
+        volumes:
+          - parse_data:/parsed_data/
+        ports:
+          - 1337:1337
+        networks:
+            ragnet:
 
     postgres:
       image: postgres:12
@@ -35,6 +58,8 @@ services:
         - POSTGRES_PORT=5432
       ports:
         - "5432:5432"
+      networks:
+        ragnet:
 
     airflow-init:
       << : *airflow-common
@@ -42,6 +67,8 @@ services:
       entrypoint: /bin/bash
       command: -c 'airflow db init && airflow users create --username admin --password admin --firstname Anonymous --lastname Admin --role Admin --email admin@example.org'
       restart: on-failure
+      networks:
+        ragnet:
 
     airflow-webserver:
       << : *airflow-common
@@ -50,33 +77,24 @@ services:
         - 8080:8080
       container_name: airflow_webserver
       restart: always
+      volumes:
+        - ./src/parser/airflow_config/airflow.cfg/:/opt/airflow/airflow.cfg
+      networks:
+        ragnet:
 
     airflow-scheduler:
       << : *airflow-common
       command: airflow scheduler
       container_name: airflow_scheduler
       restart: always
-
-    rag_service:
-        build:
-            context: ./src
-            dockerfile: Dockerfile
-        restart: always
-        depends_on:
-            - chroma
-        volumes:
-          - parse_data:/parsed_data/
-        ports:
-          - 1337:1337
-        networks:
-            - ragnet
+      networks:
+        ragnet:
 
     actual_links:
       build:
         context: ./src/parser/images/actual_links-docker
       image: airflow-actual_links
       restart: 'no'
-      network_mode: 'host'
 
     extract_law_data:
       build:
@@ -87,6 +105,7 @@ services:
 volumes:
   chroma_data:
   logs:
+  parse_data:
 
 networks:
   ragnet:
