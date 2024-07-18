@@ -15,8 +15,9 @@ def actual_law_condition(text: str):
 
 
 @click.command('get_act_links')
-@click.option('--output_file', type=click.Path())
-def get_act_links(output_file):
+@click.option('--output_folder_path', type=click.Path())
+@click.option('--current_date', type=click.Path())
+def get_act_links(output_folder_path, current_date):
     try:
         r = requests.get(f'{CONSULTANT_PLUS_LINK}/{KOAPRF_DOC_LINK}')
     except Exception as e:
@@ -52,18 +53,20 @@ def get_act_links(output_file):
                 href.get('href')
             )
 
-    FOLDER_PATH = '/'.join(
-        output_file.split('/')[:-1]
-    )
-
-    if not os.path.exists(FOLDER_PATH):
-        os.makedirs(FOLDER_PATH)
-    with open(output_file, 'w+', encoding='cp1251') as f:
-        json.dump(
-            law_chapters,
-            f,
-            ensure_ascii=False
-        )
+    if not os.path.exists(output_folder_path):
+        os.makedirs(output_folder_path)
+    
+    for key, value in law_chapters.items():
+        with open(
+            os.path.join(
+                output_folder_path,
+                key.split()[-1]
+            ) + f'_{current_date}',
+            'w+',
+            encoding='cp1251') \
+        as file:
+            for link in value:
+                file.write(link + '\n')
 
 
 if __name__ == '__main__':
