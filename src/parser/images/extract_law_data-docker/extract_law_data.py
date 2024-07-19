@@ -17,7 +17,7 @@ class Fetcher:
             workers: int = 10
     ) -> str:
         if isinstance(url_file, str):
-            self.url_file = open(url_file, encoding='utf-8')
+            self.url_file = open(url_file, encoding='cp1251')
         else:
             raise TypeError('bad urlfile type')
         if isinstance(output_file, str):
@@ -30,7 +30,7 @@ class Fetcher:
 
     def __get_urls_from_file(self):
         for line in self.url_file:
-            yield line.strip()
+            yield line.strip().split('\t')
 
     def __filter_condition(self, text_str: str) -> bool:
         if 'Утратил силу' not in text_str \
@@ -75,23 +75,25 @@ class Fetcher:
 
     async def fetch_worker(self):
         while True:
-            url = await self.queue.get()
-            if url is None:
-                await self.queue.put(url)
+            package = await self.queue.get()
+            if package is None:
+                await self.queue.put(package)
                 break
             try:
-                law_num, law_parts = await self.fetch_url(url)
+                law_num, law_parts = await self.fetch_url(package[1])
                 json.dump(
                     {
-                        law_num: law_parts
+                        'law_chapter': package[0].split()[-1],
+                        'law_norm': law_num,
+                        'law_texts': law_parts
                     },
                     fp=self.output_file,
                     ensure_ascii=False
                 )
                 self.output_file.write('\n')
             except Exception as exception:
-                print(f'Error fetching {url} : {exception}')
-                self.queue.put(url)
+                print(f'Error fetching {package} : {exception}')
+                self.queue.put(package)
 
     async def batch_fetch(self):
         workers = [
@@ -99,8 +101,8 @@ class Fetcher:
             for _ in range(self.workers)
         ]
 
-        for url in self.__get_urls_from_file():
-            await self.queue.put(url)
+        for law_chapter, url in self.__get_urls_from_file():
+            await self.queue.put((law_chapter, url))
         await self.queue.put(None)
 
         await asyncio.gather(*workers)

@@ -1,4 +1,5 @@
 import os
+import json
 
 
 from bs4 import BeautifulSoup as bs
@@ -10,7 +11,7 @@ CONSULTANT_PLUS_LINK = 'https://www.consultant.ru'
 KOAPRF_DOC_LINK = 'document/cons_doc_LAW_34661'
 
 def actual_law_condition(text: str):
-    return not ('Утратил' in text or 'Глава' in text)
+    return not ('Утратил' in text)
 
 
 @click.command('get_act_links')
@@ -32,15 +33,24 @@ def get_act_links(output_file):
         if 'Раздел II' in link.text or 'Раздел III' in link.text:
             idxs.append(idx)
 
-    actual_law_links = list(
-        map(
-            lambda x: x.get('href'),
-            filter(
-                lambda x: actual_law_condition(x.text),
-                law_links[idxs[0] + 2: idxs[1]]
-            )
+    actual_law_hrefs = list(
+        filter(
+            lambda x: actual_law_condition(x.text),
+            law_links[idxs[0] + 1: idxs[1]]
         )
     )
+
+    law_chapters = dict()
+    current_chapter = ''
+    for href in actual_law_hrefs:
+        if 'Глава' in href.text:
+            current_chapter = href.text.split('.')[0]
+            law_chapters[current_chapter] = list()
+            continue
+        law_chapters[current_chapter].\
+            append(
+                href.get('href')
+            )
 
     FOLDER_PATH = '/'.join(
         output_file.split('/')[:-1]
@@ -48,9 +58,15 @@ def get_act_links(output_file):
 
     if not os.path.exists(FOLDER_PATH):
         os.makedirs(FOLDER_PATH)
-    with open(output_file, 'w+') as f:
-        for link in actual_law_links:
-            f.write(link + '\n')
+    
+    with open(
+        output_file,
+        'w+',
+        encoding='cp1251') \
+    as file:
+        for key, value in law_chapters.items():
+            for link in value:
+                file.write(f'{key}\t{link}\n')
 
 
 if __name__ == '__main__':

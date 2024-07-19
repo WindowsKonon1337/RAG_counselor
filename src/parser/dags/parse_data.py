@@ -19,7 +19,7 @@ with DAG(
 ) as dag:
     get_links = DockerOperator(
         image="airflow-actual_links",
-        command='--output_file /opt/airflow/data/links/{{ ds }}',
+        command='--output_file /opt/airflow/data/links/{{ ds }}.csv',
         network_mode="host",
         task_id="docker-airflow-get_koaprf-act-links",
         do_xcom_push=False,
@@ -32,7 +32,7 @@ with DAG(
 
     extract_law_data = DockerOperator(
         image='airflow-extract_data',
-        command='--raw_law_links /opt/airflow/data/links/{{ ds }} --output_file /opt/airflow/data/law_jsons/{{ ds }}.json',
+        command='--raw_law_links /opt/airflow/data/links/{{ ds }}.csv --output_file /opt/airflow/data/law_jsons/{{ ds }}.json',
         network_mode="host",
         task_id="docker-airflow-extract_law_from-act-links",
         do_xcom_push=False,
