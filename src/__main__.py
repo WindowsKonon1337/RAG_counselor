@@ -1,6 +1,6 @@
 import sys
 from time import sleep
-from argparse import ArgumentParser
+from configparser import ConfigParser
 
 import chromadb
 import uvicorn
@@ -13,9 +13,15 @@ from utils.question_handler import app, setup_rag_sys
 
 
 if __name__ == '__main__':
+    config = ConfigParser()
+
+    config.read('./rag_service.cfg')
+
+    rag_config = config['RAG']
+
 
     client = chromadb.HttpClient(host='chroma')
-    embd_model = 'cointegrated/rubert-tiny2'
+    embd_model = rag_config['EmbdModel']
     if not client.list_collections():
         load_laws_into_db(
             client,
@@ -27,7 +33,8 @@ if __name__ == '__main__':
 
     setup_rag_sys(
             client=client,
-            embd_model=embd_model
+            embd_model=embd_model,
+            TOKEN=rag_config['LLM_TOKEN']
     )
 
     uvicorn.run(
