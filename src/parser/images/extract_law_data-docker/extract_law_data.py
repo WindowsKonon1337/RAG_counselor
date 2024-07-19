@@ -84,7 +84,8 @@ class Fetcher:
                 json.dump(
                     {
                         'law_chapter': package[0].split()[-1],
-                        law_num: law_parts
+                        'law_norm': law_num,
+                        'law_texts': law_parts
                     },
                     fp=self.output_file,
                     ensure_ascii=False

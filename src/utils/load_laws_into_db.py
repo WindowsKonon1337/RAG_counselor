@@ -3,6 +3,7 @@ import os
 from time import sleep
 from uuid import uuid4
 
+from torch.cuda import is_available
 import chromadb
 import chromadb.api
 import requests
@@ -76,7 +77,6 @@ def get_newest_law_data(data_path):
 
 def load_laws_into_db(
         chroma_client: chromadb.api.ClientAPI,
-        chroma_collection_name: str,
         embd_model: str,
         airflow_dag,
         data_volume_path: str,
@@ -99,11 +99,17 @@ def load_laws_into_db(
         ) != 'success':
             sleep(15)
 
-    collection = chroma_client.get_collection(
-        chroma_collection_name,
-        embedding_function=SentenceTransformerEmbeddingFunction(embd_model)
-    )
-
+    try:
+        for i in range(5, 22):
+            chroma_client.create_collection(
+                f'chapter_{i}_koap-rf',
+                embedding_function= \
+                    SentenceTransformerEmbeddingFunction(
+                        embd_model,
+                        device='cuda' if is_available() else 'cpu')
+            )
+    except Exception as e:
+        print(e)
 
     newest_data_path = os.path.join(
         data_volume_path,
@@ -112,13 +118,25 @@ def load_laws_into_db(
     )
 
     with open(newest_data_path, encoding='cp1251') as f:
+        collection_dict = dict()
+
+        for i in range(5, 22):
+            collection_dict[str(i)] = \
+                chroma_client.get_collection(
+                    f'chapter_{i}_koap-rf',
+                    embedding_function = \
+                        SentenceTransformerEmbeddingFunction(
+                            embd_model,
+                            device='cuda' if is_available() else 'cpu'
+                        )
+                )
         for line in f:
-            json_law = json.loads(line.strip())
+            json_obj = json.loads(line.strip())
 
-            law_norm, law_text = list(json_law.items())[0]
+            law_chapter = json_obj['law_chapter']
 
-            collection.add(
-                documents=law_text,
-                metadatas=[{'law_norm': law_norm}] * len(law_text),
-                ids=[str(uuid4()) for _ in range(len(law_text))]
+            collection_dict[law_chapter].add(
+                documents=json_obj['law_texts'],
+                metadatas=[{'law_norm': json_obj['law_norm']}] * len(json_obj['law_texts']),
+                ids=[str(uuid4()) for _ in range(len(json_obj['law_texts']))]
             )

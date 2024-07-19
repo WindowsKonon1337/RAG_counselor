@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     for test_obj in test_objects:
         response = requests.get(
-            f'http://localhost:1337/question?q_str={test_obj["query"]}'
+            f'http://localhost:1337/question?q_str={test_obj["query"]}&chapter_num={test_obj["chapter_num"]}'
         )
 
         respone_json = json.loads(
