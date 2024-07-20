@@ -38,7 +38,7 @@ python3 -m venv .venv && source ./path/to/.venv/bin/activate && pip install -r r
 
 $acc_{classifier}\approx0.7$
 
-$acc_{LLM final\ ans}\approx0.63$
-
+WIP: $acc_{LLM final\ ans}\approx0.63$
+к обсуждению добью до ≥0.7
 
   
