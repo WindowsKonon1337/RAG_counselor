@@ -34,7 +34,7 @@ python3 -m venv .venv && source ./path/to/.venv/bin/activate && pip install -r r
 
 ### LLM часть
 
-Сама LLM часть поделена на 2 подзадачи (chain prompting): определение наиболее релевантной главы для запроса (one-shot классификация), формирование финального ответа
+Сама LLM часть поделена на 2 подзадачи (prompt chaining): определение наиболее релевантной главы для запроса (one-shot классификация), формирование финального ответа
 
 UPD:
 
@@ -42,6 +42,5 @@ UPD:
 $acc_{classifier}\approx0.73$
 
 $acc_{LLM final\ ans}\approx0.7$
-
 
   
