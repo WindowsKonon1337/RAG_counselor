@@ -68,7 +68,7 @@ def setup_rag_sys(**kwargs):
 
         relevant_docs = collection_dict[chapter_num].query(
             query_texts=q_str,
-            n_results=5
+            n_results=7
         )
 
         compiled_texts = []
